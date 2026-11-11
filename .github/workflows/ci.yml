@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "Files need gofmt:"; echo "$unformatted"; exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: go test
+        run: go test -race ./...
+
+  self-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: go build -o bin/k8s-manifest-lint ./cmd/k8s-manifest-lint
+      - name: examples/good must pass
+        run: bin/k8s-manifest-lint --config examples/.k8s-lint.yaml examples/good
+      - name: examples/good piped like helm template output
+        run: |
+          for f in examples/good/*.yaml; do echo '---'; cat "$f"; done |
+            bin/k8s-manifest-lint --config examples/.k8s-lint.yaml
+      - name: examples/bad must fail with exit code 1
+        run: |
+          code=0
+          bin/k8s-manifest-lint --config examples/.k8s-lint.yaml examples/bad || code=$?
+          if [ "$code" -ne 1 ]; then
+            echo "expected exit code 1, got $code"; exit 1
+          fi
+
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint 1.7.12
+        run: bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+      - name: Lint workflows
+        run: ./actionlint -color .github/workflows/ci.yml examples/workflows/lint.yml

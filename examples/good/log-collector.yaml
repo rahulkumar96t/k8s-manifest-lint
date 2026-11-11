@@ -1,0 +1,46 @@
+# A node-level log collector genuinely needs to read /var/log from the host.
+# The exception is recorded on the object itself, next to the reason, so it
+# shows up in code review instead of in a global config file.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-collector
+  namespace: logging
+  labels:
+    app.kubernetes.io/name: log-collector
+    app.kubernetes.io/part-of: platform
+  annotations:
+    k8s-lint.io/ignore: "host-path"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: log-collector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: log-collector
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: collector
+          image: artifactory.example.com/docker-local/log-collector@sha256:0f4c3a6b2d1e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {memory: 128Mi}
+          livenessProbe:
+            httpGet: {path: /healthz, port: 2020}
+          readinessProbe:
+            httpGet: {path: /healthz, port: 2020}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log

@@ -1,0 +1,87 @@
+{
+  "findings": [
+    {
+      "ruleId": "pdb-required",
+      "severity": "warning",
+      "message": "2 replicas but no PodDisruptionBudget in the input selects its pods",
+      "file": "testdata/input.yaml",
+      "line": 13,
+      "column": 3,
+      "field": "spec.replicas",
+      "object": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "namespace": "shop",
+        "name": "api"
+      }
+    },
+    {
+      "ruleId": "liveness-probe",
+      "severity": "info",
+      "message": "container \"api\" has no livenessProbe",
+      "file": "testdata/input.yaml",
+      "line": 23,
+      "column": 11,
+      "field": "spec.template.spec.containers[0].livenessProbe",
+      "object": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "namespace": "shop",
+        "name": "api"
+      }
+    },
+    {
+      "ruleId": "image-tag",
+      "severity": "error",
+      "message": "container \"api\" uses image \"registry.example.com/shop/api:latest\" with the mutable latest tag",
+      "file": "testdata/input.yaml",
+      "line": 24,
+      "column": 11,
+      "field": "spec.template.spec.containers[0].image",
+      "object": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "namespace": "shop",
+        "name": "api"
+      }
+    },
+    {
+      "ruleId": "resource-limits",
+      "severity": "warning",
+      "message": "container \"api\" has no resources.limits for cpu",
+      "file": "testdata/input.yaml",
+      "line": 27,
+      "column": 13,
+      "field": "spec.template.spec.containers[0].resources.limits",
+      "object": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "namespace": "shop",
+        "name": "api"
+      }
+    },
+    {
+      "ruleId": "service-selects-workload",
+      "severity": "warning",
+      "message": "selector app=apii matches no workload in the input",
+      "file": "testdata/input.yaml",
+      "line": 39,
+      "column": 3,
+      "field": "spec.selector",
+      "object": {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "namespace": "shop",
+        "name": "api"
+      }
+    }
+  ],
+  "summary": {
+    "objects": 2,
+    "findings": 5,
+    "errors": 1,
+    "warnings": 3,
+    "infos": 1,
+    "suppressed": 1
+  }
+}

@@ -1,0 +1,7 @@
+testdata/input.yaml:13:3: warning pdb-required: 2 replicas but no PodDisruptionBudget in the input selects its pods (Deployment/shop/api)
+testdata/input.yaml:23:11: info liveness-probe: container "api" has no livenessProbe (Deployment/shop/api)
+testdata/input.yaml:24:11: error image-tag: container "api" uses image "registry.example.com/shop/api:latest" with the mutable latest tag (Deployment/shop/api)
+testdata/input.yaml:27:13: warning resource-limits: container "api" has no resources.limits for cpu (Deployment/shop/api)
+testdata/input.yaml:39:3: warning service-selects-workload: selector app=apii matches no workload in the input (Service/shop/api)
+
+2 objects checked: 5 findings (1 error, 3 warnings, 1 info), 1 suppressed

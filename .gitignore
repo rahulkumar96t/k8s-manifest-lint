@@ -1,0 +1,14 @@
+# Build output
+/bin/
+/dist/
+/k8s-manifest-lint
+
+# Reports written by local runs
+*.sarif
+coverage.out
+rendered/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store

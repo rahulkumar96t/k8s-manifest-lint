@@ -1,0 +1,129 @@
+name: k8s-manifest-lint
+description: Lint rendered Kubernetes manifests (helm template / kustomize build output) and optionally upload the findings to code scanning.
+branding:
+  icon: check-circle
+  color: blue
+
+inputs:
+  paths:
+    description: Files or directories to lint, separated by spaces or newlines. Paths must not contain spaces.
+    required: false
+    default: .
+  config:
+    description: Config file. When empty, .k8s-lint.yaml in the workspace root is used if it exists.
+    required: false
+    default: ""
+  fail-on:
+    description: Lowest severity that fails the step (error, warning, info or none). When empty, failOn from the config or "warning".
+    required: false
+    default: ""
+  format:
+    description: Format of the report printed to the log (text or json).
+    required: false
+    default: text
+  sarif-file:
+    description: Where to write a SARIF report. Set to an empty string to skip it.
+    required: false
+    default: k8s-manifest-lint.sarif
+  upload-sarif:
+    description: Upload the SARIF report to GitHub code scanning. The job needs `security-events write` permission.
+    required: false
+    default: "false"
+  sarif-category:
+    description: Code scanning category, to keep results from several runs apart.
+    required: false
+    default: k8s-manifest-lint
+  version:
+    description: Release to install with `go install` (for example v0.1.0 or latest). When empty, the copy of the source that ships with the action is built.
+    required: false
+    default: ""
+  go-version:
+    description: Go version for actions/setup-go. Set to an empty string to use the Go already on the PATH.
+    required: false
+    default: stable
+
+outputs:
+  exit-code:
+    description: Exit code of the lint run (0 clean, 1 findings at or above fail-on, 2 usage or parse error).
+    value: ${{ steps.lint.outputs.exit-code }}
+  sarif-file:
+    description: Absolute path of the SARIF report, if one was written.
+    value: ${{ steps.lint.outputs.sarif-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      if: inputs.go-version != ''
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache: false
+
+    - name: Install k8s-manifest-lint
+      shell: bash
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        ACTION_PATH: ${{ github.action_path }}
+        ACTION_REF: ${{ github.action_ref }}
+      run: |
+        set -eo pipefail
+        bin_dir="${RUNNER_TEMP}/k8s-manifest-lint/bin"
+        mkdir -p "$bin_dir"
+        if [ -n "$INPUT_VERSION" ]; then
+          GOBIN="$bin_dir" go install "github.com/rahulkumar96t/k8s-manifest-lint/cmd/k8s-manifest-lint@${INPUT_VERSION}"
+        else
+          cd "$ACTION_PATH"
+          go build -trimpath \
+            -ldflags "-X github.com/rahulkumar96t/k8s-manifest-lint/internal/cli.Version=${ACTION_REF:-dev}" \
+            -o "$bin_dir/k8s-manifest-lint" ./cmd/k8s-manifest-lint
+        fi
+        echo "$bin_dir" >> "$GITHUB_PATH"
+        "$bin_dir/k8s-manifest-lint" --version
+
+    - name: Run k8s-manifest-lint
+      id: lint
+      shell: bash
+      env:
+        INPUT_PATHS: ${{ inputs.paths }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_SARIF_FILE: ${{ inputs.sarif-file }}
+      run: |
+        # Inputs arrive as environment variables, never interpolated into
+        # the script, so a crafted path cannot inject shell code.
+        read -r -a paths <<< "${INPUT_PATHS//$'\n'/ }"
+        args=()
+        if [ -n "$INPUT_CONFIG" ]; then args+=(--config "$INPUT_CONFIG"); fi
+        if [ -n "$INPUT_FAIL_ON" ]; then args+=(--fail-on "$INPUT_FAIL_ON"); fi
+
+        if [ -n "$INPUT_SARIF_FILE" ]; then
+          sarif="$INPUT_SARIF_FILE"
+          case "$sarif" in /*) ;; *) sarif="$PWD/$sarif" ;; esac
+          mkdir -p "$(dirname "$sarif")"
+          # --fail-on none: this run only fails on usage or parse errors.
+          if k8s-manifest-lint "${args[@]}" --fail-on none --format sarif --output "$sarif" -- "${paths[@]}"; then
+            echo "sarif-file=$sarif" >> "$GITHUB_OUTPUT"
+          fi
+        fi
+
+        # The step itself always succeeds so the SARIF upload can run; the
+        # last step turns the recorded exit code into the job result.
+        code=0
+        k8s-manifest-lint "${args[@]}" --format "$INPUT_FORMAT" -- "${paths[@]}" || code=$?
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+
+    - name: Upload SARIF
+      if: inputs.upload-sarif == 'true' && steps.lint.outputs.sarif-file != ''
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: ${{ steps.lint.outputs.sarif-file }}
+        category: ${{ inputs.sarif-category }}
+
+    - name: Fail on findings
+      if: steps.lint.outputs.exit-code != '0'
+      shell: bash
+      env:
+        EXIT_CODE: ${{ steps.lint.outputs.exit-code }}
+      run: exit "$EXIT_CODE"

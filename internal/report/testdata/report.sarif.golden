@@ -1,0 +1,499 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "k8s-manifest-lint",
+          "version": "0.0.0-test",
+          "informationUri": "https://github.com/rahulkumar96t/k8s-manifest-lint",
+          "rules": [
+            {
+              "id": "resource-requests",
+              "name": "ResourceRequests",
+              "shortDescription": {
+                "text": "Containers set resource requests (cpu and memory by default)."
+              },
+              "fullDescription": {
+                "text": "The scheduler places pods by their requests; without them pods land on nodes that cannot sustain them and are evicted first under pressure."
+              },
+              "help": {
+                "text": "Containers set resource requests (cpu and memory by default). The scheduler places pods by their requests; without them pods land on nodes that cannot sustain them and are evicted first under pressure. Suppress for one object with the annotation k8s-lint.io/ignore: \"resource-requests\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "reliability"
+                ]
+              }
+            },
+            {
+              "id": "resource-limits",
+              "name": "ResourceLimits",
+              "shortDescription": {
+                "text": "Containers set resource limits (cpu and memory by default)."
+              },
+              "fullDescription": {
+                "text": "A container without a memory limit can exhaust its node and take neighbours down with it."
+              },
+              "help": {
+                "text": "Containers set resource limits (cpu and memory by default). A container without a memory limit can exhaust its node and take neighbours down with it. Suppress for one object with the annotation k8s-lint.io/ignore: \"resource-limits\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "reliability"
+                ]
+              }
+            },
+            {
+              "id": "liveness-probe",
+              "name": "LivenessProbe",
+              "shortDescription": {
+                "text": "Long-running containers define a livenessProbe (Jobs and CronJobs are exempt)."
+              },
+              "fullDescription": {
+                "text": "Without a liveness probe a deadlocked process keeps its pod Running forever."
+              },
+              "help": {
+                "text": "Long-running containers define a livenessProbe (Jobs and CronJobs are exempt). Without a liveness probe a deadlocked process keeps its pod Running forever. Suppress for one object with the annotation k8s-lint.io/ignore: \"liveness-probe\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "reliability"
+                ]
+              }
+            },
+            {
+              "id": "readiness-probe",
+              "name": "ReadinessProbe",
+              "shortDescription": {
+                "text": "Long-running containers define a readinessProbe (Jobs and CronJobs are exempt)."
+              },
+              "fullDescription": {
+                "text": "Without a readiness probe a pod receives traffic as soon as it starts, before it can serve it."
+              },
+              "help": {
+                "text": "Long-running containers define a readinessProbe (Jobs and CronJobs are exempt). Without a readiness probe a pod receives traffic as soon as it starts, before it can serve it. Suppress for one object with the annotation k8s-lint.io/ignore: \"readiness-probe\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "reliability"
+                ]
+              }
+            },
+            {
+              "id": "image-tag",
+              "name": "ImageTag",
+              "shortDescription": {
+                "text": "Images use an explicit tag other than latest, or a digest."
+              },
+              "fullDescription": {
+                "text": "latest and untagged images change under you: two nodes can run different code, and rollbacks do not roll back."
+              },
+              "help": {
+                "text": "Images use an explicit tag other than latest, or a digest. latest and untagged images change under you: two nodes can run different code, and rollbacks do not roll back. Suppress for one object with the annotation k8s-lint.io/ignore: \"image-tag\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "supply-chain"
+                ]
+              }
+            },
+            {
+              "id": "image-registry",
+              "name": "ImageRegistry",
+              "shortDescription": {
+                "text": "Images come from a registry in allowedRegistries (inactive until configured)."
+              },
+              "fullDescription": {
+                "text": "Pulling only from vetted registries keeps unscanned public images out of the cluster."
+              },
+              "help": {
+                "text": "Images come from a registry in allowedRegistries (inactive until configured). Pulling only from vetted registries keeps unscanned public images out of the cluster. Suppress for one object with the annotation k8s-lint.io/ignore: \"image-registry\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "supply-chain"
+                ]
+              }
+            },
+            {
+              "id": "run-as-non-root",
+              "name": "RunAsNonRoot",
+              "shortDescription": {
+                "text": "Containers run as non-root: runAsNonRoot: true or a non-zero runAsUser."
+              },
+              "fullDescription": {
+                "text": "A process running as root inside the container is one kernel bug away from root on the node."
+              },
+              "help": {
+                "text": "Containers run as non-root: runAsNonRoot: true or a non-zero runAsUser. A process running as root inside the container is one kernel bug away from root on the node. Suppress for one object with the annotation k8s-lint.io/ignore: \"run-as-non-root\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "security"
+                ]
+              }
+            },
+            {
+              "id": "privilege-escalation",
+              "name": "PrivilegeEscalation",
+              "shortDescription": {
+                "text": "Containers set allowPrivilegeEscalation: false."
+              },
+              "fullDescription": {
+                "text": "The default allows setuid binaries to gain more privileges than the process started with."
+              },
+              "help": {
+                "text": "Containers set allowPrivilegeEscalation: false. The default allows setuid binaries to gain more privileges than the process started with. Suppress for one object with the annotation k8s-lint.io/ignore: \"privilege-escalation\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "security"
+                ]
+              }
+            },
+            {
+              "id": "read-only-root-fs",
+              "name": "ReadOnlyRootFs",
+              "shortDescription": {
+                "text": "Containers set readOnlyRootFilesystem: true."
+              },
+              "fullDescription": {
+                "text": "A writable root filesystem lets an attacker drop tools or modify binaries; use emptyDir volumes for scratch space."
+              },
+              "help": {
+                "text": "Containers set readOnlyRootFilesystem: true. A writable root filesystem lets an attacker drop tools or modify binaries; use emptyDir volumes for scratch space. Suppress for one object with the annotation k8s-lint.io/ignore: \"read-only-root-fs\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "security"
+                ]
+              }
+            },
+            {
+              "id": "privileged",
+              "name": "Privileged",
+              "shortDescription": {
+                "text": "Containers do not run privileged."
+              },
+              "fullDescription": {
+                "text": "A privileged container has every capability and full device access: it is effectively root on the node."
+              },
+              "help": {
+                "text": "Containers do not run privileged. A privileged container has every capability and full device access: it is effectively root on the node. Suppress for one object with the annotation k8s-lint.io/ignore: \"privileged\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "security"
+                ]
+              }
+            },
+            {
+              "id": "host-namespaces",
+              "name": "HostNamespaces",
+              "shortDescription": {
+                "text": "Pods do not use hostNetwork, hostPID or hostIPC."
+              },
+              "fullDescription": {
+                "text": "Sharing host namespaces exposes node processes, ports and IPC to the pod."
+              },
+              "help": {
+                "text": "Pods do not use hostNetwork, hostPID or hostIPC. Sharing host namespaces exposes node processes, ports and IPC to the pod. Suppress for one object with the annotation k8s-lint.io/ignore: \"host-namespaces\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "security"
+                ]
+              }
+            },
+            {
+              "id": "host-path",
+              "name": "HostPath",
+              "shortDescription": {
+                "text": "Pods do not mount hostPath volumes."
+              },
+              "fullDescription": {
+                "text": "hostPath mounts give the pod direct access to the node filesystem and tie it to one node."
+              },
+              "help": {
+                "text": "Pods do not mount hostPath volumes. hostPath mounts give the pod direct access to the node filesystem and tie it to one node. Suppress for one object with the annotation k8s-lint.io/ignore: \"host-path\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "security"
+                ]
+              }
+            },
+            {
+              "id": "required-labels",
+              "name": "RequiredLabels",
+              "shortDescription": {
+                "text": "Workloads carry the labels in requiredLabels (default: app.kubernetes.io/name)."
+              },
+              "fullDescription": {
+                "text": "Consistent labels make ownership, cost allocation and dashboards work without guesswork."
+              },
+              "help": {
+                "text": "Workloads carry the labels in requiredLabels (default: app.kubernetes.io/name). Consistent labels make ownership, cost allocation and dashboards work without guesswork. Suppress for one object with the annotation k8s-lint.io/ignore: \"required-labels\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "convention"
+                ]
+              }
+            },
+            {
+              "id": "pdb-required",
+              "name": "PdbRequired",
+              "shortDescription": {
+                "text": "Workloads with replicas > 1 are covered by a PodDisruptionBudget in the same input."
+              },
+              "fullDescription": {
+                "text": "Without a budget a node drain can evict every replica at once, turning routine maintenance into an outage."
+              },
+              "help": {
+                "text": "Workloads with replicas > 1 are covered by a PodDisruptionBudget in the same input. Without a budget a node drain can evict every replica at once, turning routine maintenance into an outage. Suppress for one object with the annotation k8s-lint.io/ignore: \"pdb-required\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "reliability"
+                ]
+              }
+            },
+            {
+              "id": "service-selects-workload",
+              "name": "ServiceSelectsWorkload",
+              "shortDescription": {
+                "text": "Service selectors match the pod labels of at least one workload in the same input."
+              },
+              "fullDescription": {
+                "text": "A selector that matches nothing is almost always a label typo, and the Service silently has no endpoints."
+              },
+              "help": {
+                "text": "Service selectors match the pod labels of at least one workload in the same input. A selector that matches nothing is almost always a label typo, and the Service silently has no endpoints. Suppress for one object with the annotation k8s-lint.io/ignore: \"service-selects-workload\"."
+              },
+              "helpUri": "https://github.com/rahulkumar96t/k8s-manifest-lint#rules",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "kubernetes",
+                  "reliability"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "pdb-required",
+          "ruleIndex": 13,
+          "level": "warning",
+          "message": {
+            "text": "2 replicas but no PodDisruptionBudget in the input selects its pods (Deployment/shop/api)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/input.yaml"
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "Deployment/shop/api",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "liveness-probe",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "container \"api\" has no livenessProbe (Deployment/shop/api)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/input.yaml"
+                },
+                "region": {
+                  "startLine": 23,
+                  "startColumn": 11
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "Deployment/shop/api",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "image-tag",
+          "ruleIndex": 4,
+          "level": "error",
+          "message": {
+            "text": "container \"api\" uses image \"registry.example.com/shop/api:latest\" with the mutable latest tag (Deployment/shop/api)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/input.yaml"
+                },
+                "region": {
+                  "startLine": 24,
+                  "startColumn": 11
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "Deployment/shop/api",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "resource-limits",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "container \"api\" has no resources.limits for cpu (Deployment/shop/api)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/input.yaml"
+                },
+                "region": {
+                  "startLine": 27,
+                  "startColumn": 13
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "Deployment/shop/api",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "service-selects-workload",
+          "ruleIndex": 14,
+          "level": "warning",
+          "message": {
+            "text": "selector app=apii matches no workload in the input (Service/shop/api)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "testdata/input.yaml"
+                },
+                "region": {
+                  "startLine": 39,
+                  "startColumn": 3
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "Service/shop/api",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

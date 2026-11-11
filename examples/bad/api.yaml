@@ -1,0 +1,37 @@
+# Typical first-draft Deployment: no resources, no probes, no security
+# context, a mutable image tag from Docker Hub and three replicas without a
+# PodDisruptionBudget.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: shop
+  labels:
+    app: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+---
+# The selector has a typo (app: apii), so the Service has no endpoints.
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: shop
+spec:
+  selector:
+    app: apii
+  ports:
+    - port: 80

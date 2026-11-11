@@ -1,0 +1,52 @@
+# Example: lint what a Helm chart and a Kustomize overlay actually render,
+# on every pull request. Copy it to .github/workflows/ in your repository and
+# adjust the chart and overlay paths. Pin the action to a release tag or a
+# commit SHA rather than a branch.
+name: Lint Kubernetes manifests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  helm:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # needed to upload SARIF to code scanning
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Render the chart
+        run: |
+          mkdir -p rendered
+          helm template my-app deploy/chart \
+            --namespace my-app \
+            --values deploy/chart/values-prod.yaml > rendered/helm.yaml
+      - name: Lint
+        uses: rahulkumar96t/k8s-manifest-lint@main
+        with:
+          paths: rendered/helm.yaml
+          config: .k8s-lint.yaml
+          upload-sarif: true
+          sarif-category: helm
+
+  kustomize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render the overlay
+        run: |
+          mkdir -p rendered
+          kubectl kustomize deploy/overlays/prod > rendered/kustomize.yaml
+      - name: Lint
+        uses: rahulkumar96t/k8s-manifest-lint@main
+        with:
+          paths: rendered/kustomize.yaml
+          fail-on: error # warnings are printed but do not fail the job
+          sarif-file: ""
+          version: latest # go install the latest release instead of building

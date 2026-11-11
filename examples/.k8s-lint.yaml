@@ -1,0 +1,22 @@
+# Configuration used by CI to self-lint examples/good.
+failOn: warning
+
+# Images may only come from the team's ECR registries (any region) or the
+# docker-local repository on the Artifactory instance.
+allowedRegistries:
+  - "111111111111.dkr.ecr.*.amazonaws.com"
+  - artifactory.example.com/docker-local
+
+requiredLabels:
+  - app.kubernetes.io/name
+  - app.kubernetes.io/part-of
+
+# CPU limits are left out on purpose: they cause CFS throttling even on
+# idle nodes. Memory limits are still required.
+resources:
+  requests: [cpu, memory]
+  limits: [memory]
+
+rules:
+  service-selects-workload:
+    severity: error
